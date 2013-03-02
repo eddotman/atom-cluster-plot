@@ -370,7 +370,7 @@ def analyze_clusters (cluster_num = 8):
 #Compute clusters
 #compute_clusters ("annealed.cfg", 22, 62.0243, 100000)
 #compute_clusters ("asimp.cfg", 22, 62.0243, 100000)
-#ompute_clusters ("best100k_3", 0, 100000)
+#compute_clusters ("best100k_3", 0, 100000)
 
 
 #Plot clusters

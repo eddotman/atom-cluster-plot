@@ -172,13 +172,13 @@ def compute_coord_num (rho, lb, ub):
 	return 4.0*pi*trapz(multiply(f1[lb:ub,1],multiply(f1[lb:ub,0],f1[lb:ub,0]))*rho,x=f1[lb:ub,0],dx=0.001)
 	
 #Compute 3D clusters of atoms in an overlay and save to file
-def compute_clusters (cfg_file, cfg_start_row, box_size, num_atoms, cluster_coord=4, nn_file = "nn_list", box_length=62.024362):
+def compute_clusters (cfg_file, cfg_start_row, num_atoms, cluster_coord=4, nn_file = "nn_list", box_length=62.024362):
 	
 	#Load file
 	f_cfg = load_file(cfg_file, cfg_start_row)
 	
 	#Resize box and reorient
-	f_cfg = dot(box_size, f_cfg) 
+	f_cfg = dot(box_length, f_cfg) 
 	f_cfg = vstack((arange(num_atoms), transpose(f_cfg)))
 	f_cfg = transpose(f_cfg)
 
@@ -215,7 +215,7 @@ def compute_clusters (cfg_file, cfg_start_row, box_size, num_atoms, cluster_coor
 			#Look for NNs of the NN-1 (which will be fixed to z-axis)
 			nn_list = f_nn[cluster[1][0]]
 			for y in arange(1,cluster_coord+1):
-				if NN_list[y] != cluster[0][0]:
+				if nn_list[y] != cluster[0][0]:
 					cluster = vstack((cluster, f_cfg[nn_list[y]]))
 					
 			#number of atoms in cluster
@@ -223,65 +223,60 @@ def compute_clusters (cfg_file, cfg_start_row, box_size, num_atoms, cluster_coor
 		else:
 			cluster_num = cluster_coord+1
 			
-		#check for PBC (don't plot if a neighbour crosses a boundary)
+		#check for PBC
 		L = box_length #half-dimension of box
-		pbc_flag = False
 		for y in arange(1, cluster_num):
 			for z in arange(1, 4):
 				if abs(cluster[y][z]-cluster[0][z]) > L:
-					pbc_flag = True
+					cluster[y][z] -= sign(cluster[y][z]-cluster[0][z])*L*2
+
+		#translate cluster to origin
+		origin = cluster[0]
 		
-		#If no pbcs, accept cluster
-		#Rotate and align the cluster
-		if pbc_flag is False:
+		#shift to origin
+		for y in arange(1, cluster_num):
+			cluster[y][1] -= origin[1]
+			cluster[y][2] -= origin[2]
+			cluster[y][3] -= origin[3]
 		
-			#translate cluster to origin
-			origin = cluster[0]
-			
-			#shift to origin
-			for y in arange(1, cluster_num):
-				cluster[y][1] -= origin[1]
-				cluster[y][2] -= origin[2]
-				cluster[y][3] -= origin[3]
-			
-			cluster[0] = [origin[0], 0, 0, 0]
+		cluster[0] = [origin[0], 0, 0, 0]
+	
+		#spherical transformation
+		for y in arange(cluster_num):
+			cluster[y][1],cluster[y][2],cluster[y][3] = sph_coords(cluster[y, 1:4])
 		
-			#spherical transformation
-			for y in arange(cluster_num):
-				cluster[y][1],cluster[y][2],cluster[y][3] = sph_coords(cluster[y, 1:4])
+		#fix one of the atoms to the z-axis
+		theta_adjust = cluster[1][2]
+		
+		#transform back to cartesian
+		for y in arange(cluster_num):
+			cluster[y][1],cluster[y][2],cluster[y][3] = crt_coords(cluster[y, 1:4])
 			
-			#fix one of the atoms to the z-axis
-			theta_adjust = cluster[1][2]
-			
-			#transform back to cartesian
-			for y in arange(cluster_num):
-				cluster[y][1],cluster[y][2],cluster[y][3] = crt_coords(cluster[y, 1:4])
-				
-			#Find rotation axis using cross product
-			rot_axis = cross([0,0,1], cluster[1, 1:4])
-			
-			#Apply quaternion transform
-			for y in arange(cluster_num):
-				cluster[y][1],cluster[y][2],cluster[y][3] = dot(rotation_matrix(rot_axis,theta_adjust),cluster[y, 1:4])
-			
-			#spherical transformation
-			for y in arange(cluster_num):
-				cluster[y][1],cluster[y][2],cluster[y][3] = sph_coords(cluster[y, 1:4])
-			
-			#fix one atom to the xz plane
-			phi_adjust = cluster[2][3]
-			
-			#rotate cluster
-			for y in arange(cluster_num):
-				cluster[y][3] -= phi_adjust
-			
-			#transform back to cartesian
-			for y in arange(cluster_num):
-				cluster[y][1],cluster[y][2],cluster[y][3] = crt_coords(cluster[y, 1:4])
-			
-			#save clusters information
-			clusters = vstack((clusters, cluster))
-			sing_clusters = vstack((sing_clusters, cluster[0:5]))
+		#Find rotation axis using cross product
+		rot_axis = cross([0,0,1], cluster[1, 1:4])
+		
+		#Apply quaternion transform
+		for y in arange(cluster_num):
+			cluster[y][1],cluster[y][2],cluster[y][3] = dot(rotation_matrix(rot_axis,theta_adjust),cluster[y, 1:4])
+		
+		#spherical transformation
+		for y in arange(cluster_num):
+			cluster[y][1],cluster[y][2],cluster[y][3] = sph_coords(cluster[y, 1:4])
+		
+		#fix one atom to the xz plane
+		phi_adjust = cluster[2][3]
+		
+		#rotate cluster
+		for y in arange(cluster_num):
+			cluster[y][3] -= phi_adjust
+		
+		#transform back to cartesian
+		for y in arange(cluster_num):
+			cluster[y][1],cluster[y][2],cluster[y][3] = crt_coords(cluster[y, 1:4])
+		
+		#save clusters information
+		clusters = vstack((clusters, cluster))
+		sing_clusters = vstack((sing_clusters, cluster[0:5]))
 			
 	#Save clusters to files
 	savetxt("single_clusters", sing_clusters)
@@ -368,11 +363,14 @@ def analyze_clusters (cluster_num = 8):
 
 #Compute nearest neighbours
 #compute_nn_list ("annealed.cfg", 22, 5)
+#compute_nn_list ("asimp.cfg", 22, 5)
+#compute_nn_list ("best100k_3", 0, 5)
 
 
 #Compute clusters
 #compute_clusters ("annealed.cfg", 22, 62.0243, 100000)
 #compute_clusters ("asimp.cfg", 22, 62.0243, 100000)
+#ompute_clusters ("best100k_3", 0, 100000)
 
 
 #Plot clusters

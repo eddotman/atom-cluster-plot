@@ -26,7 +26,7 @@ def compute_nn_list (file_name, start_row, num_nn):
 	bounds = array([1.99999, 1.99999, 1.99999]) #Can't do exactly 2.0 because rounding or something...
 	atom_list = PeriodicCKDTree(bounds, f1)
 	nn = atom_list.query(f1, k=num_nn)
-	nn[1][:,1:5] = fliplr(nn[1][:,1:5]) #sort so farthest NN is first
+	#nn[1][:,1:5] = fliplr(nn[1][:,1:5]) #sort so farthest NN is first
 	save_file("nn_list", nn[1], "%.6d")
 
 #Makes a 3D scatterplot
@@ -367,19 +367,19 @@ def analyze_clusters (cluster_num = 8):
 #Compute nearest neighbours
 #compute_nn_list ("annealed.cfg", 22, 5)
 #compute_nn_list ("asimp.cfg", 22, 5)
-#compute_nn_list ("best100k_3", 0, 5)
+compute_nn_list ("best100k_3", 0, 5)
 
 
 #Compute clusters
 #compute_clusters ("annealed.cfg", 22, 62.0243, 100000)
 #compute_clusters ("asimp.cfg", 22, 62.0243, 100000)
-#compute_clusters ("best100k_3", 0, 100000)
+compute_clusters ("best100k_3", 0, 100000)
 
 
 #Plot clusters
-#clusters = load_file("double_clusters")
+clusters = load_file("double_clusters")
 #sing_clusters = load_file("single_clusters")
-#plot_3d_scatter(clusters[0:10000,1], clusters[0:10000,2], clusters[0:10000,3], "x", "y", "z", "Tetrahedral Clusters", xlb = -5, xub = 5, ylb = -5, yub = 5, zlb = -5, zub = 5, sz=1)
+plot_3d_scatter(clusters[0:10000,1], clusters[0:10000,2], clusters[0:10000,3], "x", "y", "z", "Tetrahedral Clusters", xlb = -5, xub = 5, ylb = -5, yub = 5, zlb = -5, zub = 5, sz=1)
 #plot_3d_glyph(clusters[:,1], clusters[:,2], clusters[:,3], compute_vector, m="quiver")
 #plot_3d_glyph(clusters[:,1], clusters[:,2], clusters[:,3], sz=.2)
 #plot_3d_glyph(sing_clusters[:,1], sing_clusters[:,2], sing_clusters[:,3], sz=.2)

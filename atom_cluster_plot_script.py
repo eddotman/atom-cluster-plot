@@ -6,10 +6,11 @@
 
 #Import necessary libraries
 from numpy import *
+#from scipy import spatial
 from mayavi import mlab
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import scikits.ann as ann
+from periodic_kdtree import PeriodicCKDTree
 
 #Imports a text (data) file
 def load_file (file_name, start_row = 0):
@@ -22,9 +23,11 @@ def save_file (location, file, format):
 #Saves nearest neighbours
 def compute_nn_list (file_name, start_row, num_nn):
 	f1 = load_file(file_name, start_row)
-	atom_list = ann.kdtree(f1)
-	nn = atom_list.knn(f1, num_nn)[0]
-	save_file("nn_list", nn, "%d")
+	bounds = array([1.99999, 1.99999, 1.99999]) #Can't do exactly 2.0 because rounding or something...
+	atom_list = PeriodicCKDTree(bounds, f1)
+	nn = atom_list.query(f1, k=num_nn)
+	nn[1][:,1:5] = fliplr(nn[1][:,1:5]) #sort so farthest NN is first
+	save_file("nn_list", nn[1], "%.6d")
 
 #Makes a 3D scatterplot
 def plot_3d_scatter (x, y, z, x_lbl, y_lbl, z_lbl, title, xlb = -1, xub = 1, ylb = -1, yub = 1, zlb = -1, zub = 1, sz=1):
@@ -182,14 +185,14 @@ def compute_clusters (cfg_file, cfg_start_row, num_atoms, cluster_coord=4, nn_fi
 	f_cfg = vstack((arange(num_atoms), transpose(f_cfg)))
 	f_cfg = transpose(f_cfg)
 
-	#Plot clusters within WWW model using NNs
+	#Plot clusters within model using NNs
 	f_nn = load_file(nn_file)
 
 	#Max clusters to plot
 	cluster_count = 0
 	cluster_max = num_atoms
 
-	#Holds clustersl coords
+	#Holds cluster coords
 	clusters = empty((0,cluster_coord))
 
 	#Holds single clusters
@@ -374,24 +377,26 @@ def analyze_clusters (cluster_num = 8):
 
 
 #Plot clusters
-#plot_3d_scatter(clusters[:,1], clusters[:,2], clusters[:,3], "x", "y", "z", "Tetrahedral Clusters", xlb = -5, xub = 5, ylb = -5, yub = 5, zlb = -5, zub = 5, sz=5)
+#clusters = load_file("double_clusters")
+#sing_clusters = load_file("single_clusters")
+#plot_3d_scatter(clusters[0:10000,1], clusters[0:10000,2], clusters[0:10000,3], "x", "y", "z", "Tetrahedral Clusters", xlb = -5, xub = 5, ylb = -5, yub = 5, zlb = -5, zub = 5, sz=1)
 #plot_3d_glyph(clusters[:,1], clusters[:,2], clusters[:,3], compute_vector, m="quiver")
 #plot_3d_glyph(clusters[:,1], clusters[:,2], clusters[:,3], sz=.2)
 #plot_3d_glyph(sing_clusters[:,1], sing_clusters[:,2], sing_clusters[:,3], sz=.2)
 
 
 #Plot distributions
-#dih_atoms, dih_angles, xz_angles, z_dists, atom2_dists, plane_angles = analyze_clusters()
-#plot_histogram(xz_angles, 100, "Angle (Deg)", "Counts", "Atom 1-0-2 Angle")
-#plot_histogram(dih_angles, 360, "Angle (Deg)", "Counts", "Dihedral Angle (All)")
+dih_atoms, dih_angles, xz_angles, z_dists, atom2_dists, plane_angles = analyze_clusters()
+plot_histogram(xz_angles, 100, "Angle (Deg)", "Counts", "Atom 1-0-2 Angle")
+plot_histogram(dih_angles, 360, "Angle (Deg)", "Counts", "Dihedral Angle (All)")
 #plot_histogram(dih_angles[:,0], 100, "Angle (Deg)", "Counts", "Dihedral Angle (Atom 1)")
 #plot_histogram(dih_angles[:,1], 100, "Angle (Deg)", "Counts", "Dihedral Angle (Atom 2)")
 #plot_histogram(dih_angles[:,2], 100, "Angle (Deg)", "Counts", "Dihedral Angle (Atom 3)")
-#plot_histogram(z_dists, 100, "Length (Angstrom)", "Counts", "0-1 Atom Bond Distance")
-#plot_histogram(plane_angles, 100, "Degrees (Deg)", "Counts", "Plane Axis Angle")
-#hist_2d, hist_2d_x, hist_2d_y = plot_2d_histogram(dih_atoms[:,1], dih_atoms[:,2], 200)
+plot_histogram(z_dists, 100, "Length (Angstrom)", "Counts", "0-1 Atom Bond Distance")
+plot_histogram(plane_angles, 100, "Degrees (Deg)", "Counts", "Plane Axis Angle")
+hist_2d, hist_2d_x, hist_2d_y = plot_2d_histogram(dih_atoms[:,1], dih_atoms[:,2], 200)
 #plot_2d_image(hist_2d, "Dihedral Atom Distribution")
-#mlab.surf(hist_2d, warp_scale = 0.5)
+mlab.surf(hist_2d, warp_scale = 0.5)
 #plot_2d_scatter(z_dists, xz_angles, "Distance (Angstrom)", "Angle (Deg)", "Atom 1-0-2 Angle VS Atom 1 Bond Length")
 #plot_2d_scatter(atom2_dists, xz_angles, "Distance (Angstrom)", "Angle (Deg)", "Atom 1-0-2 Angle VS Atom 2 Bond Length")
 

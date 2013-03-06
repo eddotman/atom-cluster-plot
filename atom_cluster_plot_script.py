@@ -171,8 +171,8 @@ def compute_grid (grid_size, grid_file, start_row):
 	mlab.show()
 	
 #Compute coordination number from g(r)
-def compute_coord_num (rho, lb, ub):
-	return 4.0*pi*trapz(multiply(f1[lb:ub,1],multiply(f1[lb:ub,0],f1[lb:ub,0]))*rho,x=f1[lb:ub,0],dx=0.001)
+def compute_coord_num (data, rho, lb, ub):
+	return 4.0*pi*trapz(multiply(data[lb:ub,1],multiply(data[lb:ub,0],data[lb:ub,0]))*rho,x=data[lb:ub,0],dx=0.001)
 	
 #Compute 3D clusters of atoms in an overlay and save to file
 def compute_clusters (cfg_file, cfg_start_row, num_atoms, cluster_coord=4, nn_file = "nn_list", box_length=62.024362):
@@ -312,6 +312,9 @@ def analyze_clusters (cluster_num = 8):
 
 	#atom2 distances
 	atom2_dists = empty(0)
+	
+	#dihedral distances
+	dih_dists = empty(0)
 
 	counter = 0
 	cluster = empty((0,4))
@@ -321,6 +324,9 @@ def analyze_clusters (cluster_num = 8):
 			
 			#Compute dihedral atoms
 			dih_atoms = vstack((dih_atoms, cluster[5], cluster[6], cluster[7]))
+			
+			#compute dihedral distances
+			dih_dists = append(dih_dists, (linalg.norm(cluster[5,1:4]), linalg.norm(cluster[6,1:4]), linalg.norm(cluster[7,1:4])))
 			
 			#Compute dihedral angles in spherical
 			dih_angles = append(dih_angles, ((180/pi)*sph_coords(cluster[5,1:4])[2], (180/pi)*sph_coords(cluster[6,1:4])[2], (180/pi)*sph_coords(cluster[7,1:4])[2]))
@@ -358,7 +364,7 @@ def analyze_clusters (cluster_num = 8):
 			
 		counter += 1
 		
-	return (dih_atoms, dih_angles, xz_angles, z_dists, atom2_dists, plane_angles)
+	return (dih_atoms, dih_angles, xz_angles, z_dists, atom2_dists, plane_angles, dih_dists)
 
 
 
@@ -367,45 +373,46 @@ def analyze_clusters (cluster_num = 8):
 #Compute nearest neighbours
 #compute_nn_list ("annealed.cfg", 22, 5)
 #compute_nn_list ("asimp.cfg", 22, 5)
-compute_nn_list ("best100k_3", 0, 5)
+#compute_nn_list ("best100k_3", 0, 5)
 
 
 #Compute clusters
-#compute_clusters ("annealed.cfg", 22, 62.0243, 100000)
-#compute_clusters ("asimp.cfg", 22, 62.0243, 100000)
-compute_clusters ("best100k_3", 0, 100000)
+#compute_clusters ("annealed.cfg", 22, 100000)
+#compute_clusters ("asimp.cfg", 22, 100000)
+#compute_clusters ("best100k_3", 0, 100000)
 
 
 #Plot clusters
-clusters = load_file("double_clusters")
+#clusters = load_file("double_clusters")
 #sing_clusters = load_file("single_clusters")
-plot_3d_scatter(clusters[0:10000,1], clusters[0:10000,2], clusters[0:10000,3], "x", "y", "z", "Tetrahedral Clusters", xlb = -5, xub = 5, ylb = -5, yub = 5, zlb = -5, zub = 5, sz=1)
+#plot_3d_scatter(clusters[0:10000,1], clusters[0:10000,2], clusters[0:10000,3], "x", "y", "z", "Tetrahedral Clusters", xlb = -5, xub = 5, ylb = -5, yub = 5, zlb = -5, zub = 5, sz=1)
 #plot_3d_glyph(clusters[:,1], clusters[:,2], clusters[:,3], compute_vector, m="quiver")
 #plot_3d_glyph(clusters[:,1], clusters[:,2], clusters[:,3], sz=.2)
 #plot_3d_glyph(sing_clusters[:,1], sing_clusters[:,2], sing_clusters[:,3], sz=.2)
 
 
 #Plot distributions
-dih_atoms, dih_angles, xz_angles, z_dists, atom2_dists, plane_angles = analyze_clusters()
-plot_histogram(xz_angles, 100, "Angle (Deg)", "Counts", "Atom 1-0-2 Angle")
-plot_histogram(dih_angles, 360, "Angle (Deg)", "Counts", "Dihedral Angle (All)")
+#dih_atoms, dih_angles, xz_angles, z_dists, atom2_dists, plane_angles, dih_dists = analyze_clusters()
+#plot_histogram(xz_angles, 100, "Angle (Deg)", "Counts", "Atom 1-0-2 Angle")
+#plot_histogram(dih_angles, 360, "Angle (Deg)", "Counts", "Dihedral Angle (All)")
 #plot_histogram(dih_angles[:,0], 100, "Angle (Deg)", "Counts", "Dihedral Angle (Atom 1)")
 #plot_histogram(dih_angles[:,1], 100, "Angle (Deg)", "Counts", "Dihedral Angle (Atom 2)")
 #plot_histogram(dih_angles[:,2], 100, "Angle (Deg)", "Counts", "Dihedral Angle (Atom 3)")
-plot_histogram(z_dists, 100, "Length (Angstrom)", "Counts", "0-1 Atom Bond Distance")
-plot_histogram(plane_angles, 100, "Degrees (Deg)", "Counts", "Plane Axis Angle")
-hist_2d, hist_2d_x, hist_2d_y = plot_2d_histogram(dih_atoms[:,1], dih_atoms[:,2], 200)
+#plot_histogram(z_dists, 100, "Length (Angstrom)", "Counts", "0-1 Atom Bond Distance")
+#plot_histogram(plane_angles, 100, "Degrees (Deg)", "Counts", "Plane Axis Angle")
+#hist_2d, hist_2d_x, hist_2d_y = plot_2d_histogram(dih_atoms[:,1], dih_atoms[:,2], 200)
 #plot_2d_image(hist_2d, "Dihedral Atom Distribution")
-mlab.surf(hist_2d, warp_scale = 0.5)
+#mlab.surf(hist_2d, warp_scale = 0.5)
 #plot_2d_scatter(z_dists, xz_angles, "Distance (Angstrom)", "Angle (Deg)", "Atom 1-0-2 Angle VS Atom 1 Bond Length")
 #plot_2d_scatter(atom2_dists, xz_angles, "Distance (Angstrom)", "Angle (Deg)", "Atom 1-0-2 Angle VS Atom 2 Bond Length")
-
+#plot_2d_scatter(dih_dists, dih_angles, "Distance (Angstrom)", "Angle (Deg)", "Dihedral Angle VS Dihedral Bond Length")
 
 #Compute 1st coordination peak
-#rho = 0.0435
-#lb = 0
-#ub = 200
-#compute_coord_num(rho, lb, ub)
+rho = 0.0435
+lb = 0
+ub = 200
+data = load_file("asimp.pgr", 5)
+print compute_coord_num(data, rho, lb, ub)
 
 #Check g(r) fit
 #f_gr = load_file ("annealed.pgr", 6)

@@ -6,7 +6,6 @@
 
 #Import necessary libraries
 from numpy import *
-#from scipy import spatial
 from mayavi import mlab
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -26,7 +25,6 @@ def compute_nn_list (file_name, start_row, num_nn):
 	bounds = array([1.999999999, 1.999999999, 1.999999999]) #Can't do exactly 2.0 because rounding or something...
 	atom_list = PeriodicCKDTree(bounds, f1)
 	nn = atom_list.query(f1, k=num_nn)
-	#nn[1][:,1:5] = fliplr(nn[1][:,1:5]) #sort so farthest NN is first
 	save_file("nn_list", nn[1], "%.6d")
 
 #Makes a 3D scatterplot
@@ -48,11 +46,13 @@ def plot_3d_scatter (x, y, z, x_lbl, y_lbl, z_lbl, title, xlb = -1, xub = 1, ylb
 	plt.show()
 
 #Plots larger 3d points	
-def plot_3d_glyph (x, y, z, f=0, op = .7, sz = 1.0, m="glyph"):
+def plot_3d_glyph (x, y, z, f=0, op = .7, sz = 1.0, m="glyph", c=(1,1,1)):
 	if m is "glyph":
 		mlab.points3d(x, y, z, opacity=op, scale_factor=sz)
 	elif m is "quiver":
 		mlab.quiver3d(x, y, z, f, opacity=op, scale_factor=sz)
+	elif m is "point":
+		mlab.points3d(x, y, z, opacity=op, scale_factor=sz, mode="point", color=c)
 	
 	mlab.show()
 	
@@ -60,7 +60,6 @@ def plot_3d_glyph (x, y, z, f=0, op = .7, sz = 1.0, m="glyph"):
 def plot_2d_scatter (x, y, x_lbl, y_lbl, title):
 	fig = plt.figure()
 	plt.scatter(x, y)
-	#plt.plot(x, y)
 	plt.xlabel(x_lbl)
 	plt.ylabel(y_lbl)
 	plt.title(title)
@@ -74,21 +73,56 @@ def plot_histogram (x, b, x_lbl, y_lbl, title):
 	plt.title(title)
 	plt.show()
 	
+def save_histogram (filename, data, r=None, b=100):
+	hist_dat = histogram(data, bins=b, range=r)
+	hist_dat = transpose(vstack((hist_dat[1], append(hist_dat[0], 0))))
+	savetxt(filename, hist_dat)
+	
 def plot_2d_histogram (x, y, b):
 	return histogram2d(x, y, bins = b, range=[[-4,4],[-4,4]])
 	
 #Plots two lines on same graph
 def plot_2d_line_comparison (x1, y1, x2, y2, x_lbl, y_lbl, lbl1, lbl2, title):
 	fig = plt.figure()
-	p1 = plt.plot(x1, y1, "b", label = lbl1)
-	p2 = plt.plot(x2, y2, "r", label = lbl2)
+	plt.plot(x1, y1, "b", label = lbl1)
+	plt.plot(x2, y2, "r", label = lbl2)
+	
+	#Compute and plot error using root(N)
+	err1top = empty(y1.shape[0])
+	err1bot = empty(y1.shape[0])
+	err2top = empty(y2.shape[0])
+	err2bot = empty(y2.shape[0])
+	
+	for x in arange(y1.shape[0]):
+		err1top[x] = y1[x] + sqrt(y1[x])
+		err1bot[x] = y1[x] - sqrt(y1[x])
+	
+	for x in arange(y2.shape[0]):
+		err2top[x] = y2[x] + sqrt(y2[x])
+		err2bot[x] = y2[x] - sqrt(y2[x])
+	
+	plt.plot(x1, err1top, "k:")
+	plt.plot(x1, err1bot, "k:")
+	plt.plot(x2, err2top, "k:")
+	plt.plot(x2, err2bot, "k:", label = "Error")
+	
 	plt.xlabel(x_lbl)
 	plt.ylabel(y_lbl)
 	plt.title(title)
 	plt.legend() 
+
+	plt.show()	
 	
-	plt.xlim(0,10)
-	plt.ylim(0,10)
+#Plots three lines on same graph
+def plot_three_line_comparison (x1, y1, x2, y2, x3, y3, x_lbl, y_lbl, lbl1, lbl2, lbl3, title):
+	fig = plt.figure()
+	p1 = plt.plot(x1, y1, "b", label = lbl1)
+	p2 = plt.plot(x2, y2, "r", label = lbl2)
+	p2 = plt.plot(x3, y3, "g", label = lbl3)
+	plt.xlabel(x_lbl)
+	plt.ylabel(y_lbl)
+	plt.title(title)
+	plt.legend() 
 	
 	plt.show()	
 
@@ -286,10 +320,10 @@ def compute_clusters (cfg_file, cfg_start_row, num_atoms, cluster_coord=4, nn_fi
 	savetxt("double_clusters", clusters)
 	
 #Analyzes clusters
-def analyze_clusters (cluster_num = 8):
+def analyze_clusters (cluster_num = 8, file="double_clusters"):
 
 	#load complete clusters
-	dbl_file = load_file("double_clusters")
+	dbl_file = load_file(file)
 	#sing_file = load_file("single_clusters")
 
 	#Holds z-atom distances
@@ -313,8 +347,17 @@ def analyze_clusters (cluster_num = 8):
 	#atom2 distances
 	atom2_dists = empty(0)
 	
+	#atom4 distances
+	atom4_dists = empty(0)
+	
 	#dihedral distances
 	dih_dists = empty(0)
+	
+	#1-2, 1-3, and 1-4 distances
+	atom1_dists = empty(0)
+	
+	#2-567, 3-567, and 4-567 distances
+	atom234_dists = empty(0)
 
 	counter = 0
 	cluster = empty((0,4))
@@ -337,14 +380,17 @@ def analyze_clusters (cluster_num = 8):
 			#compute distribution of atom-1 distance
 			z_dists = append(z_dists, cluster[1][3])
 			
-			#if cluster[1][3] == 0:
-			#	print cluster[0]
-			#	print cluster[1]
-			#	break
-			
 			#compute atom 2 distance
 			atom2_dists = append(atom2_dists, linalg.norm(cluster[2][1:4]))
 			
+			#compute atom 4 distance
+			atom4_dists = append(atom4_dists, linalg.norm(cluster[4][1:4]))
+			
+			#compute 1-2, 1-3, and 1-4 distances
+			atom1_dists = append(atom1_dists, (linalg.norm(compute_vector(cluster[1][1], cluster[1][2], cluster[1][3], o=cluster[2,1:4])), linalg.norm(compute_vector(cluster[1][1], cluster[1][2], cluster[1][3], o=cluster[3,1:4])), linalg.norm(compute_vector(cluster[1][1], cluster[1][2], cluster[1][3], o=cluster[4,1:4]))))
+			
+			#compute 2-567, 3-567, and 4-567 distances
+			atom234_dists = append(atom234_dists, (linalg.norm(compute_vector(cluster[2][1], cluster[2][2], cluster[2][3], o=cluster[5,1:4])), linalg.norm(compute_vector(cluster[2][1], cluster[2][2], cluster[2][3], o=cluster[6,1:4])), linalg.norm(compute_vector(cluster[2][1], cluster[2][2], cluster[2][3], o=cluster[7,1:4])), linalg.norm(compute_vector(cluster[3][1], cluster[3][2], cluster[3][3], o=cluster[5,1:4])), linalg.norm(compute_vector(cluster[3][1], cluster[3][2], cluster[3][3], o=cluster[6,1:4])), linalg.norm(compute_vector(cluster[3][1], cluster[3][2], cluster[3][3], o=cluster[7,1:4])), linalg.norm(compute_vector(cluster[4][1], cluster[4][2], cluster[4][3], o=cluster[5,1:4])), linalg.norm(compute_vector(cluster[4][1], cluster[4][2], cluster[4][3], o=cluster[6,1:4])), linalg.norm(compute_vector(cluster[4][1], cluster[4][2], cluster[4][3], o=cluster[7,1:4]))))
 			
 			#compute the plane normal angle
 			basis1a = compute_vector(cluster[2][1], cluster[2][2], cluster[2][3], o=cluster[3, 1:4])
@@ -368,67 +414,7 @@ def analyze_clusters (cluster_num = 8):
 		cluster = vstack((cluster, x))	
 		counter += 1
 		
-	return (dih_atoms, dih_angles, xz_angles, z_dists, atom2_dists, plane_angles, dih_dists)
+	return (dih_atoms, dih_angles, xz_angles, z_dists, atom1_dists, atom2_dists, atom4_dists, atom234_dists, plane_angles, dih_dists)
 
 
-
-#Write in function calls below
-
-#Compute nearest neighbours
-#compute_nn_list ("annealed.cfg", 22, 8)
-#compute_nn_list ("asimp.cfg", 22, 8)
-compute_nn_list ("best100k_3", 0, 8)
-
-
-#Compute clusters
-#compute_clusters ("annealed.cfg", 22, 100000)
-#compute_clusters ("asimp.cfg", 22, 100000)
-compute_clusters ("best100k_3", 0, 100000)
-
-
-#Plot clusters
-clusters = load_file("double_clusters")
-#sing_clusters = load_file("single_clusters")
-plot_3d_scatter(clusters[0:10000,1], clusters[0:10000,2], clusters[0:10000,3], "x", "y", "z", "Tetrahedral Clusters", xlb = -5, xub = 5, ylb = -5, yub = 5, zlb = -5, zub = 5, sz=1)
-#plot_3d_glyph(clusters[:,1], clusters[:,2], clusters[:,3], compute_vector, m="quiver")
-#plot_3d_glyph(clusters[:,1], clusters[:,2], clusters[:,3], sz=.2)
-#plot_3d_glyph(sing_clusters[:,1], sing_clusters[:,2], sing_clusters[:,3], sz=.2)
-
-
-#Plot distributions
-dih_atoms, dih_angles, xz_angles, z_dists, atom2_dists, plane_angles, dih_dists = analyze_clusters()
-plot_histogram(xz_angles, 100, "Angle (Deg)", "Counts", "Atom 1-0-2 Angle")
-plot_histogram(dih_angles, 360, "Angle (Deg)", "Counts", "Dihedral Angle (All)")
-#plot_histogram(dih_angles[:,0], 100, "Angle (Deg)", "Counts", "Dihedral Angle (Atom 1)")
-#plot_histogram(dih_angles[:,1], 100, "Angle (Deg)", "Counts", "Dihedral Angle (Atom 2)")
-#plot_histogram(dih_angles[:,2], 100, "Angle (Deg)", "Counts", "Dihedral Angle (Atom 3)")
-plot_histogram(z_dists, 100, "Length (Angstrom)", "Counts", "0-1 Atom Bond Distance")
-plot_histogram(plane_angles, 100, "Degrees (Deg)", "Counts", "Plane Axis Angle")
-hist_2d, hist_2d_x, hist_2d_y = plot_2d_histogram(dih_atoms[:,1], dih_atoms[:,2], 200)
-#plot_2d_image(hist_2d, "Dihedral Atom Distribution") 
-mlab.surf(hist_2d, warp_scale = 0.5)
-plot_2d_scatter(z_dists, xz_angles, "Distance (Angstrom)", "Angle (Deg)", "Atom 1-0-2 Angle VS Atom 1 Bond Length")
-plot_2d_scatter(atom2_dists, xz_angles, "Distance (Angstrom)", "Angle (Deg)", "Atom 1-0-2 Angle VS Atom 2 Bond Length")
-plot_2d_scatter(dih_dists, dih_angles, "Distance (Angstrom)", "Angle (Deg)", "Dihedral Angle VS Dihedral Bond Length")
-
-
-#Compute 1st coordination peak
-#rho = 0.0435
-#lb = 0
-#ub = 200
-#data = load_file("asimp.pgr", 5)
-#print compute_coord_num(data, rho, lb, ub)
-
-#Check g(r) fit
-#f_gr = load_file ("annealed.pgr", 6)
-#f_exp_gr = load_file ("annealed.gr", 1)
-#plot_2d_line_comparison (f_gr[:,0], f_gr[:,1], f_exp_gr[:,0], f_exp_gr[:,1], "r (Angstrom)", "g(r)", "RMC", "XRD", "RDF")
-
-#Plot bulk visualizations
-#compute_grid(27, "asimp.grid", 7)
-
-#cfg_file = load_file("asimp.cfg", 22)
-#plot_3d_scatter(cfg_file[:,0], cfg_file[:,1], cfg_file[:,2], "x", "y", "z", "3D Config")
-
-print "Done"
 

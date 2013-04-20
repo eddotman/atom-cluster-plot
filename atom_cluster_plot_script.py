@@ -6,10 +6,13 @@
 
 #Import necessary libraries
 from numpy import *
+from scipy import stats
+import scipy.ndimage as ndi
 from mayavi import mlab
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from periodic_kdtree import PeriodicCKDTree
+
 
 #Imports a text (data) file
 def load_file (file_name, start_row = 0):
@@ -22,7 +25,7 @@ def save_file (location, file, format):
 #Saves nearest neighbours
 def compute_nn_list (file_name, start_row, num_nn):
 	f1 = load_file(file_name, start_row)
-	bounds = array([1.999999999, 1.999999999, 1.999999999]) #Can't do exactly 2.0 because rounding or something...
+	bounds = array([1.999999999, 1.999999999, 1.999999999]) #Can't do exactly 2.0 because rounding
 	atom_list = PeriodicCKDTree(bounds, f1)
 	nn = atom_list.query(f1, k=num_nn)
 	save_file("nn_list", nn[1], "%.6d")
@@ -59,7 +62,7 @@ def plot_3d_glyph (x, y, z, f=0, op = .7, sz = 1.0, m="glyph", c=(1,1,1)):
 #Makes a 2D scatterplot
 def plot_2d_scatter (x, y, x_lbl, y_lbl, title):
 	fig = plt.figure()
-	plt.scatter(x, y)
+	plt.plot(x, y, "g")
 	plt.xlabel(x_lbl)
 	plt.ylabel(y_lbl)
 	plt.title(title)
@@ -77,6 +80,28 @@ def save_histogram (filename, data, r=None, b=100):
 	hist_dat = histogram(data, bins=b, range=r)
 	hist_dat = transpose(vstack((hist_dat[1], append(hist_dat[0], 0))))
 	savetxt(filename, hist_dat)
+
+def compute_3d_kde (data):
+	kde = stats.gaussian_kde(data)
+	return kde
+
+def grid_density_gaussian_filter(x0, y0, z0, x1, y1, z1, w, h, l, data):
+    kx = (w - 1) / (x1 - x0)
+    ky = (h - 1) / (y1 - y0)
+    kz = (l - 1) / (z1 - z0)
+    r = 2.5
+    border = r
+    imgw = (w + 2 * border)
+    imgh = (h + 2 * border)
+    imgl = (l + 2 * border)
+    img = zeros((imgh,imgw,imgl))
+    for x, y, z in data:
+        ix = int((x - x0) * kx) + border
+        iy = int((y - y0) * ky) + border
+        iz = int((z - z0) * kz) + border
+        if 0 <= ix < imgw and 0 <= iy < imgh and 0 <= iz < imgl:
+            img[iy][ix][iz] += 1
+    return ndi.gaussian_filter(img, (r,r,r))  #gaussian convolution
 	
 def plot_2d_histogram (x, y, b):
 	return histogram2d(x, y, bins = b, range=[[-4,4],[-4,4]])
@@ -240,13 +265,13 @@ def compute_clusters (cfg_file, cfg_start_row, num_atoms, cluster_coord=4, nn_fi
 		if cluster_count is cluster_max: #max clusters to plot
 			break
 			
-		cluster = empty((5,4))
+		cluster = empty((cluster_coord + 1,4))
 		
-		for y in arange(5):
+		for y in arange(cluster_coord + 1):
 			cluster[y] = f_cfg[f_nn[x][y]]
 			
 		#Plot double-clusters if desired
-		plot_double = True
+		plot_double = False
 		
 		if plot_double is True:
 			#Look for NNs of the NN-1 (which will be fixed to z-axis)
@@ -415,6 +440,3 @@ def analyze_clusters (cluster_num = 8, file="double_clusters"):
 		counter += 1
 		
 	return (dih_atoms, dih_angles, xz_angles, z_dists, atom1_dists, atom2_dists, atom4_dists, atom234_dists, plane_angles, dih_dists)
-
-
-

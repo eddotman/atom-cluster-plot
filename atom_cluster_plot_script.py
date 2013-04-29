@@ -68,6 +68,19 @@ def plot_2d_scatter (x, y, x_lbl, y_lbl, title):
 	plt.title(title)
 	plt.show()
 
+#returns a cartesian flattened 2D slice of a 3D wedge
+def compute_3d_wedge (data, r_range, theta_range, phi_range):
+	wedge_points = empty((0, 2))
+
+	for x in data:
+		x = sph_coords(x)
+
+		if x[0] > r_range[0] and x[0] < r_range[1] and x[1] > theta_range[0] and x[1] < theta_range[1] and x[2] > phi_range[0] and x[2] < phi_range[1]:
+			x_crt = (x[0]*cos(x[2]), x[0]*sin(x[2])) #force to xy-plane
+			wedge_points = vstack((wedge_points, x_crt))
+
+	return wedge_points
+
 def plot_histogram (x, b, x_lbl, y_lbl, title):
 	fig = plt.figure()
 	plt.hist(x, bins = b, histtype="stepfilled", color="k")

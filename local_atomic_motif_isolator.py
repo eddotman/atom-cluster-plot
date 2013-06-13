@@ -27,7 +27,7 @@ class LAMisolator():
 		bounds = array([1.999999999, 1.999999999, 1.999999999]) #Can't do exactly 2.0 because rounding
 		atom_list = PeriodicCKDTree(bounds, f1)
 		nn = atom_list.query(f1, k=num_nn)
-		self.save_file(file_name + "_nn", nn[1], "%.6d")
+		self.save_file(file_name + "_nn", nn[1])
 
 		print "Nearest-neighbour list successfully computed!"
 
@@ -88,8 +88,8 @@ class LAMisolator():
 		print "LAMs successfully read from file!"
 
 	def orient_LAMs (self):
-		for LAM in self.LAMs:
-			LAM = LAM.orient_LAM(LAM.atoms)
+		for i in self.LAMs.shape(0):
+			self.LAMs[i].orient_LAM(LAM.atoms)
 		print "LAMs successfully oriented!"
 
 	def save_LAMs (self, savefile):
@@ -112,9 +112,9 @@ if __name__ == "__main__":
 	
 	iso1 = LAMisolator()
 
-	#iso1.compute_nn_list("www_coords", 0, 18)
+	iso1.compute_nn_list("asimp.cfg", 22, 18)
 
-	iso1.read_LAMs("www_coords", 0, 100000, 16, "www_coords_nn")
+	iso1.read_LAMs("asimp.cfg", 22, 100000, 16, "asimp.cfg_nn")
 	iso1.orient_LAMs()
 	#iso1.save_LAMdata("www_coords")
-	iso1.save_LAMs("www_coords")
+	iso1.save_LAMs("asimp.cfg")

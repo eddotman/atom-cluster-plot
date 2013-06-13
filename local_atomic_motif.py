@@ -74,14 +74,14 @@ class LAM:
 			cluster[y][1],cluster[y][2],cluster[y][3] = self.sph_coords(cluster[y, 1:4])
 		
 		#fix one of the atoms to the z-axis
-		theta_adjust = cluster[1][2]
+		theta_adjust = cluster[4][2]
 		
 		#transform back to cartesian
 		for y in arange(self.num_atoms):
 			cluster[y][1],cluster[y][2],cluster[y][3] = self.crt_coords(cluster[y, 1:4])
 			
 		#Find rotation axis using cross product
-		rot_axis = cross([0,0,1], cluster[1, 1:4])
+		rot_axis = cross([0,0,1], cluster[4, 1:4])
 		
 		#Apply quaternion transform
 		for y in arange(self.num_atoms):

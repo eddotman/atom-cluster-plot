@@ -88,7 +88,7 @@ class LAMisolator():
 		print "LAMs successfully read from file!"
 
 	def orient_LAMs (self):
-		for i in self.LAMs.shape(0):
+		for i in arange(self.LAMs.shape[0]):
 			self.LAMs[i].orient_LAM(LAM.atoms)
 		print "LAMs successfully oriented!"
 

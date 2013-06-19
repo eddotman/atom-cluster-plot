@@ -89,7 +89,7 @@ class LAMisolator():
 
 	def orient_LAMs (self):
 		for i in arange(self.LAMs.shape[0]):
-			self.LAMs[i].orient_LAM(LAM.atoms)
+			self.LAMs[i].orient_LAM(self.LAMs[i].atoms)
 		print "LAMs successfully oriented!"
 
 	def save_LAMs (self, savefile):
@@ -112,9 +112,9 @@ if __name__ == "__main__":
 	
 	iso1 = LAMisolator()
 
-	iso1.compute_nn_list("asimp.cfg", 22, 18)
+	iso1.compute_nn_list("www_coords", 0, 18)
 
-	iso1.read_LAMs("asimp.cfg", 22, 100000, 16, "asimp.cfg_nn")
+	iso1.read_LAMs("www_coords", 0, 100000, 16, "www_coords_nn")
 	iso1.orient_LAMs()
-	#iso1.save_LAMdata("www_coords")
-	iso1.save_LAMs("asimp.cfg")
+	iso1.save_LAMdata("www_coords")
+	iso1.save_LAMs("www_coords")

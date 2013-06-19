@@ -108,12 +108,6 @@ class LAM:
 	#Analyzes cluster
 	def analyze_LAM (self, cluster):
 		
-		#compute dihedral distance
-		#dih_dist = (linalg.norm(cluster[5,1:4]), linalg.norm(cluster[6,1:4]), linalg.norm(cluster[7,1:4]))
-		
-		#Compute dihedral angle in spherical
-		#dih_angle = ((180/pi)*self.sph_coords(cluster[5,1:4])[2], (180/pi)*self.sph_coords(cluster[6,1:4])[2], (180/pi)*self.sph_coords(cluster[7,1:4])[2])
-		
 		#Compute xz angle
 		xz_angle =  self.compute_angle(cluster[1, 1:4], cluster[0, 1:4], cluster[2, 1:4])
 		
@@ -125,12 +119,6 @@ class LAM:
 		
 		#compute atom 4 distance
 		atom4_dist = linalg.norm(cluster[4][1:4])
-		
-		#compute 1-2, 1-3, and 1-4 distances
-		#atom1_dist = (linalg.norm(self.compute_vector(cluster[1,1:4], o=cluster[2,1:4])), linalg.norm(self.compute_vector(cluster[1,1:4], o=cluster[3,1:4])), linalg.norm(self.compute_vector(cluster[1,1:4], o=cluster[4,1:4])))
-		
-		#compute 2-567, 3-567, and 4-567 distances
-		#atom234_dist = (linalg.norm(self.compute_vector(cluster[2,1:4], o=cluster[5,1:4])), linalg.norm(self.compute_vector(cluster[2,1:4], o=cluster[6,1:4])), linalg.norm(self.compute_vector(cluster[2,1:4], o=cluster[7,1:4])), linalg.norm(self.compute_vector(cluster[3,1:4], o=cluster[5,1:4])), linalg.norm(self.compute_vector(cluster[3,1:4], o=cluster[6,1:4])), linalg.norm(self.compute_vector(cluster[3,1:4], o=cluster[7,1:4])), linalg.norm(self.compute_vector(cluster[4,1:4], o=cluster[5,1:4])), linalg.norm(self.compute_vector(cluster[4,1:4], o=cluster[6,1:4])), linalg.norm(self.compute_vector(cluster[4,1:4], o=cluster[7,1:4])))
 		
 		#compute the plane normal angle
 		basis1a = self.compute_vector(cluster[2,1:4], o=cluster[3, 1:4])

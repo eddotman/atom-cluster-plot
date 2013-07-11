@@ -60,14 +60,14 @@ class LAMplotter:
 
 	 	print "Plotting..."
 	 	print cluster_gauss.shape
-		mlab.contour3d(cluster_gauss, contours = 10, opacity=0.15)
+		mlab.contour3d(cluster_gauss, contours = 70, opacity=0.10)
 		mlab.show()
 
 	def full_compute(self):
-		#self.save_LAM_density("build/" + self.name + "_LAMs")
+		self.save_LAM_density("build/" + self.name + "_LAMs")
 		self.plot_LAM_contours("build/" + self.name + "_gauss_f")
 
 
 if __name__ == "__main__":
-	plot1 = LAMplotter("www_coords")
+	plot1 = LAMplotter("asimp")
 	plot1.full_compute()

@@ -92,7 +92,42 @@ class LAM:
 			cluster[y][1],cluster[y][2],cluster[y][3] = self.sph_coords(cluster[y, 1:4])
 		
 		#fix one atom to the xz plane
-		phi_adjust = cluster[2][3]
+		phi_adjust = cluster[1][3]
+		
+		#rotate cluster
+		for y in arange(self.num_atoms):
+			cluster[y][3] -= phi_adjust
+		
+		#transform back to cartesian
+		for y in arange(self.num_atoms):
+			cluster[y][1],cluster[y][2],cluster[y][3] = self.crt_coords(cluster[y, 1:4])
+
+		###Do plane alignment###
+
+		#Find plane normal
+		plane_leg1 = self.compute_vector(cluster[2][1:4], cluster[1, 1:4])
+		plane_leg2 = self.compute_vector(cluster[3][1:4], cluster[1, 1:4])
+		plane_normal = cross(plane_leg1, plane_leg2)
+
+		#Get angle of rotation
+		rot_angle = (pi/180.0)*self.compute_angle(plane_normal, array((0,0,0)), array((0,0,1)))
+		if (rot_angle > pi/2.0):
+			plane_normal = (-1)*plane_normal
+			rot_angle = (pi/180.0)*self.compute_angle(plane_normal, array((0,0,0)), array((0,0,1)))
+
+		#Get rotation axis using z-axis and plane normal
+		rot_axis = cross([0,0,1], plane_normal)
+
+		#Do rotation
+		for y in arange(self.num_atoms):
+			cluster[y][1],cluster[y][2],cluster[y][3] = dot(self.rotation_matrix(rot_axis,rot_angle),cluster[y, 1:4])
+
+		#spherical transformation
+		for y in arange(self.num_atoms):
+			cluster[y][1],cluster[y][2],cluster[y][3] = self.sph_coords(cluster[y, 1:4])
+		
+		#fix one atom to the xz plane
+		phi_adjust = cluster[1][3]
 		
 		#rotate cluster
 		for y in arange(self.num_atoms):
@@ -137,3 +172,7 @@ class LAM:
 		plane_angle = axis_angle
 			
 		return (xz_angle, z_dist, atom2_dist, atom4_dist, plane_angle)
+
+
+if __name__ == "__main__":
+	print "Build successful!"

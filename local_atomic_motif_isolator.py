@@ -9,9 +9,11 @@ from periodic_kdtree import PeriodicCKDTree
 
 class LAMisolator(): 
 
-	def __init__(self):
+	def __init__(self, name=""):
 		self.LAMs = empty(0)
 		self.LAMatoms = empty((0,4))
+		self.name = name
+		print "LAMisolator built with name: " + self.name
 
 	#Imports a text (data) file
 	def load_file (self, file_name, start_row = 0):
@@ -24,10 +26,14 @@ class LAMisolator():
 	#Saves nearest neighbours
 	def compute_nn_list (self, file_name, start_row, num_nn):
 		f1 = self.load_file(file_name, start_row)
+
+		print "Loaded file: " + file_name
+		print "Computing nearest-neighbour list..."
+
 		bounds = array([1.999999999, 1.999999999, 1.999999999]) #Can't do exactly 2.0 because rounding
 		atom_list = PeriodicCKDTree(bounds, f1)
 		nn = atom_list.query(f1, k=num_nn)
-		self.save_file(file_name + "_nn", nn[1])
+		self.save_file("build/" + file_name + "_nn", nn[1])
 
 		print "Nearest-neighbour list successfully computed!"
 
@@ -47,6 +53,8 @@ class LAMisolator():
 
 		#Holds LAMs
 		LAMs = empty(0)
+
+		print "Reading LAMs from file..."
 
 		#Plot LAMs
 		for x in arange(f_nn.shape[0]):
@@ -88,33 +96,39 @@ class LAMisolator():
 		print "LAMs successfully read from file!"
 
 	def orient_LAMs (self):
+		print "Orienting LAMs..."
 		for i in arange(self.LAMs.shape[0]):
 			self.LAMs[i].orient_LAM(self.LAMs[i].atoms)
 		print "LAMs successfully oriented!"
 
 	def save_LAMs (self, savefile):
-		self.save_file(savefile + "_LAMs", self.LAMatoms)
+		print "Saving LAMs to file..."
+		self.save_file("build/" + savefile + "_LAMs", self.LAMatoms)
 
 		print "LAMs successfully saved!"
 
 	def save_LAMdata (self, savefile):
 		LAMdata = empty((0,5))
 
+		print "Analyizing LAMs..."
+
 		for LAM in self.LAMs:
 			LAMdata = vstack((LAMdata, LAM.analyze_LAM(LAM.atoms)))
 
-		self.save_file(savefile + "_LAMdata", LAMdata)
+		self.save_file("build/" + savefile + "_LAMdata", LAMdata)
 
 		print "LAM data successfully analyzed and saved!"
+
+	def full_compute (self):
+		self.compute_nn_list(self.name, 0, 18)
+		self.read_LAMs(self.name, 0, 100000, 16, "build/" + self.name + "_nn")
+		self.orient_LAMs()
+		#self.save_LAMdata(self.name)
+		self.save_LAMs(self.name)
 
 
 if __name__ == "__main__":
 	
-	iso1 = LAMisolator()
-
-	iso1.compute_nn_list("www_coords", 0, 18)
-
-	iso1.read_LAMs("www_coords", 0, 100000, 16, "www_coords_nn")
-	iso1.orient_LAMs()
-	iso1.save_LAMdata("www_coords")
-	iso1.save_LAMs("www_coords")
+	iso1 = LAMisolator("www_coords")
+	iso1.full_compute()
+	

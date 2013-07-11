@@ -1,5 +1,5 @@
 #Written by Edward Kim
-#Script for plotting local atomic motifs of atoms
+#Script for managing local atomic motifs of atoms
 
 #Import necessary libraries
 from numpy import *

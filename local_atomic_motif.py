@@ -1,3 +1,4 @@
+#Written by Edward Kim
 #Contains the Local Atomic Motif (LAM) class definitions
 
 from numpy import *

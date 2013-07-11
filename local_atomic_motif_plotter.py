@@ -72,6 +72,7 @@ class LAMplotter:
 		print "Radially filtering LAMs..."
 
 		i = atom_id
+
 		while i < self.LAMraw.shape[0]:
 			if r_min < linalg.norm(self.LAMraw[i,1:4]) < r_max:
 				new_LAMraw = vstack((new_LAMraw, self.LAMraw[i-(atom_id):i+(num_atoms-atom_id), :]))
@@ -81,7 +82,7 @@ class LAMplotter:
 
 	def full_compute(self):
 		self.load_LAMs("build/" + self.name + "_LAMs")
-		self.radial_filter(0, 2.7, 4, 17)
+		self.radial_filter(2.7, 10, 4, 17)
 		self.save_LAM_density()
 		self.plot_LAM_contours("build/" + self.name + "_gauss_f")
 

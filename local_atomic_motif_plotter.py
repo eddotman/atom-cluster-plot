@@ -12,6 +12,7 @@ class LAMplotter:
 	def __init__(self, name):
 		print "Plotter created!"
 		self.name = name
+		self.LAMgauss = None
 
 	#Imports a text (data) file
 	def load_file (self, file_name, start_row = 0):
@@ -46,22 +47,28 @@ class LAMplotter:
 
 	def save_LAM_density(self, readfile):
 		print "Loading LAMs from file..."
-		LAMraw = self.load_file(readfile)
+		self.LAMraw = self.load_file(readfile)
 
 		print "Computing gaussian filter..."
-		self.LAMgauss = self.grid_density_gaussian_filter(-10, -10, -10, 10, 10, 10, 256, 256, 256, LAMraw[:,1:4])
+		self.LAMgauss = self.grid_density_gaussian_filter(-10, -10, -10, 10, 10, 10, 256, 256, 256, self.LAMraw[:,1:4])
 
 		self.save_file("build/" + self.name + "_gauss_f", self.LAMgauss)
 		print "Gaussian filter saved!"
 
 	def plot_LAM_contours(self, readfile):
-	 	print "Reading file..."
-	 	cluster_gauss = self.load_data(readfile)
+	 	
+		if self.LAMgauss == None:
+	 		print "Reading file..."
+	 		self.LAMgauss = self.load_data(readfile)
 
 	 	print "Plotting..."
-	 	print cluster_gauss.shape
-		mlab.contour3d(cluster_gauss, contours = 70, opacity=0.10)
+		mlab.contour3d(self.LAMgauss, contours = 75, opacity=0.10)
 		mlab.show()
+
+	def radial_filter(self, r_min, r_max, atom_id):
+		for i in arange(self.LAMraw.shape[0]):
+			if not r_min < self.LAMraw[i].atoms[atom_id] < r_max:
+				self.LAMraw = delete(self.LAMraw, i)
 
 	def full_compute(self):
 		self.save_LAM_density("build/" + self.name + "_LAMs")
@@ -69,5 +76,5 @@ class LAMplotter:
 
 
 if __name__ == "__main__":
-	plot1 = LAMplotter("asimp")
+	plot1 = LAMplotter("www_coords")
 	plot1.full_compute()

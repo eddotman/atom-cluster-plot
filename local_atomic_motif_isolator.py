@@ -90,7 +90,6 @@ class LAMisolator():
 			#Store LAM
 			LAM_temp = LAM(cluster_coord, cluster)
 			LAMs = append(LAMs, LAM_temp)
-			self.LAMatoms = append(self.LAMatoms, cluster, axis=0)
 
 		self.LAMs = LAMs
 		print "LAMs successfully read from file!"
@@ -98,7 +97,7 @@ class LAMisolator():
 	def orient_LAMs (self):
 		print "Orienting LAMs..."
 		for i in arange(self.LAMs.shape[0]):
-			self.LAMs[i].orient_LAM(self.LAMs[i].atoms)
+			self.LAMatoms = vstack((self.LAMatoms, self.LAMs[i].orient_LAM(self.LAMs[i].atoms)))
 		print "LAMs successfully oriented!"
 
 	def save_LAMs (self, savefile):
@@ -110,7 +109,7 @@ class LAMisolator():
 	def save_LAMdata (self, savefile):
 		LAMdata = empty((0,5))
 
-		print "Analyizing LAMs..."
+		print "Analyzing LAMs..."
 
 		for LAM in self.LAMs:
 			LAMdata = vstack((LAMdata, LAM.analyze_LAM(LAM.atoms)))
@@ -129,6 +128,6 @@ class LAMisolator():
 
 if __name__ == "__main__":
 	
-	iso1 = LAMisolator("www_coords")
+	iso1 = LAMisolator("rmc_expr_coords")
 	iso1.full_compute()
 	

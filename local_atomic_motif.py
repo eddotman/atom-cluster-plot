@@ -126,6 +126,9 @@ class LAM:
 		for y in arange(self.num_atoms):
 			cluster[y][1],cluster[y][2],cluster[y][3] = self.sph_coords(cluster[y, 1:4])
 		
+		#fix one atom to the xz plane
+		phi_adjust = cluster[1][3]
+
 		#rotate cluster
 		for y in arange(self.num_atoms):
 			cluster[y][3] -= phi_adjust
@@ -133,9 +136,10 @@ class LAM:
 		#transform back to cartesian
 		for y in arange(self.num_atoms):
 			cluster[y][1],cluster[y][2],cluster[y][3] = self.crt_coords(cluster[y, 1:4])
-		
+
 		#save clusters information
 		self.atoms = cluster
+		return self.atoms
 		
 	#Analyzes cluster
 	def analyze_LAM (self, cluster):

@@ -148,15 +148,10 @@ class LAM:
 		#Compute xz angle
 		xz_angle =  self.compute_angle(cluster[1, 1:4], cluster[0, 1:4], cluster[2, 1:4])
 		
-		#compute atom-1 distance
-		z_dist =  cluster[1][3]
+		#compute atom 3 distance
+		atom3_dist =  linalg.norm(cluster[3][1:4])
 		
-		#compute atom 2 distance
-		atom2_dist = linalg.norm(cluster[2][1:4])
-		
-		#compute atom 4 distance
-		atom4_dist = linalg.norm(cluster[4][1:4])
-		
+		'''
 		#compute the plane normal angle
 		basis1a = self.compute_vector(cluster[2,1:4], o=cluster[3, 1:4])
 		basis1b = self.compute_vector(cluster[4,1:4], o=cluster[3, 1:4])
@@ -170,10 +165,10 @@ class LAM:
 		
 		if axis_angle > 90.0:
 			axis_angle = 180.0 - axis_angle
-		
 		plane_angle = axis_angle
+		'''
 			
-		return (xz_angle, z_dist, atom2_dist, atom4_dist, plane_angle)
+		return (xz_angle, atom3_dist)
 
 
 if __name__ == "__main__":

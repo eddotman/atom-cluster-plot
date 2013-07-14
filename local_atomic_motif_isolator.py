@@ -106,8 +106,24 @@ class LAMisolator():
 
 		print "LAMs successfully saved!"
 
+	def load_LAMs (self, loadfile, coord_num):
+		print "Loading LAMs directly from LAM file..."
+		LAM_file = self.load_file(loadfile)
+		LAM_temp = empty((0,4))
+
+		c = 0
+
+		for row in LAM_file:
+			if c != coord_num:
+				LAM_temp = vstack((LAM_temp, row))
+			else:
+				self.LAMs = append(self.LAMs, LAM(coord_num, LAM_temp))
+				LAM_temp = empty((0,4))
+				c=-1
+			c+=1
+
 	def save_LAMdata (self, savefile):
-		LAMdata = empty((0,5))
+		LAMdata = empty((0,2))
 
 		print "Analyzing LAMs..."
 
@@ -119,11 +135,12 @@ class LAMisolator():
 		print "LAM data successfully analyzed and saved!"
 
 	def full_compute (self):
-		self.compute_nn_list(self.name, 0, 18)
-		self.read_LAMs(self.name, 0, 100000, 16, "build/" + self.name + "_nn")
-		self.orient_LAMs()
-		#self.save_LAMdata(self.name)
-		self.save_LAMs(self.name)
+		#self.compute_nn_list(self.name, 0, 18)
+		#self.read_LAMs(self.name, 0, 100000, 16, "build/" + self.name + "_nn")
+		#self.orient_LAMs()
+		self.load_LAMs("build/" + self.name + "_LAMs", 16)
+		self.save_LAMdata(self.name)
+		#self.save_LAMs(self.name)
 
 
 if __name__ == "__main__":

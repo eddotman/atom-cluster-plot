@@ -6,6 +6,7 @@ from numpy import *
 from local_atomic_motif import LAM
 from mayavi import mlab
 import scipy.ndimage as ndi
+import matplotlib.pyplot as plt
 
 class LAMplotter:
 
@@ -49,6 +50,10 @@ class LAMplotter:
 		print "Loading LAMs from file..."
 		self.LAMraw = self.load_file(readfile)
 
+	def load_LAMdata(self, readfile):
+		print "Loading LAM data..."
+		self.LAMdata = self.load_file(readfile)
+
 	def save_LAM_density(self):
 		print "Computing gaussian filter..."
 		self.LAMgauss = self.grid_density_gaussian_filter(-10, -10, -10, 10, 10, 10, 256, 256, 256, self.LAMraw[:,1:4])
@@ -65,6 +70,18 @@ class LAMplotter:
 		mlab.contour3d(self.LAMgauss, contours = 75, opacity=0.10)
 		mlab.show()
 
+	def plot_LAMdata(self, col, lbl):
+		self.plot_histogram(self.LAMdata[:,col], 100, lbl, "Counts", "")
+
+	def plot_histogram (self, x, b, x_lbl, y_lbl, title):
+		print "Plotting histogram of LAM data..."
+		fig = plt.figure()
+		plt.hist(x, bins = b, histtype="step", color="k")
+		plt.xlabel(x_lbl)
+		plt.ylabel(y_lbl)
+		plt.title(title)
+		plt.show()
+
 	#Only include LAMs which have atom #<atom_id> in a specified radial range 
 	def radial_filter(self, r_min, r_max, atom_id, num_atoms):
 		new_LAMraw = empty((0, 4))
@@ -72,18 +89,23 @@ class LAMplotter:
 		print "Radially filtering LAMs..."
 
 		i = atom_id
+		c = 0
 		while i < self.LAMraw.shape[0]:
 			if r_min < linalg.norm(self.LAMraw[i,1:4]) < r_max:
 				new_LAMraw = vstack((new_LAMraw, self.LAMraw[i-(atom_id):i+(num_atoms-atom_id), :]))
+				c+=1
 			i += num_atoms
+		print c
 
 		self.LAMraw = new_LAMraw
 
 	def full_compute(self):
 		self.load_LAMs("build/" + self.name + "_LAMs")
-		#self.radial_filter(0, 2.7, 4, 17)
+		self.radial_filter(2.6, 10.0, 4, 17)
 		self.save_LAM_density()
 		self.plot_LAM_contours("build/" + self.name + "_gauss_f")
+		#self.load_LAMdata("build/" + self.name + "_LAMdata")
+		#self.plot_LAMdata(1, "Bond Length (Angstroms)")
 
 
 if __name__ == "__main__":

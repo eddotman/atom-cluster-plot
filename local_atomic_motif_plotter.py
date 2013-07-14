@@ -101,9 +101,9 @@ class LAMplotter:
 
 	def full_compute(self):
 		self.load_LAMs("build/" + self.name + "_LAMs")
-		self.radial_filter(2.6, 10.0, 4, 17)
-		self.save_LAM_density()
-		self.plot_LAM_contours("build/" + self.name + "_gauss_f")
+		self.radial_filter(2.5, 10.0, 4, 17)
+		#self.save_LAM_density()
+		#self.plot_LAM_contours("build/" + self.name + "_gauss_f")
 		#self.load_LAMdata("build/" + self.name + "_LAMdata")
 		#self.plot_LAMdata(1, "Bond Length (Angstroms)")
 

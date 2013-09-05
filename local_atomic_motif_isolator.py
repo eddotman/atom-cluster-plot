@@ -135,12 +135,12 @@ class LAMisolator():
 		print "LAM data successfully analyzed and saved!"
 
 	def full_compute (self):
-		#self.compute_nn_list(self.name, 0, 18)
-		#self.read_LAMs(self.name, 0, 100000, 16, "build/" + self.name + "_nn")
-		#self.orient_LAMs()
-		self.load_LAMs("build/" + self.name + "_LAMs", 16)
-		self.save_LAMdata(self.name)
-		#self.save_LAMs(self.name)
+		self.compute_nn_list(self.name, 0, 18)
+		self.read_LAMs(self.name, 0, 100000, 16, "build/" + self.name + "_nn") # box_length=65.9893 for germanium
+		self.orient_LAMs()
+		#self.load_LAMs("build/" + self.name + "_LAMs", 16)
+		#self.save_LAMdata(self.name)
+		self.save_LAMs(self.name)
 
 
 if __name__ == "__main__":

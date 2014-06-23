@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="atom-cluster-plot : Visualization of atomic clusters in amorphous materials" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>atom-cluster-plot</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/eddotman/atom-cluster-plot">View on GitHub</a>
+
+          <h1 id="project_title">atom-cluster-plot</h1>
+          <h2 id="project_tagline">Visualization of atomic clusters in amorphous materials</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/eddotman/atom-cluster-plot/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/eddotman/atom-cluster-plot/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="local-atomic-motif-isolator" class="anchor" href="#local-atomic-motif-isolator"><span class="octicon octicon-link"></span></a>Local Atomic Motif Isolator</h1>
+
+<h2>
+<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h2>
+
+<p>This repo includes the <code>LAM</code> and <code>LAMisolator</code> classes, which allow for LAM isolation. The <code>LAMplotter</code> class contains some methods for computing histograms and plotting the density isosurfaces via the <a href="http://docs.enthought.com/mayavi/mayavi/">Mayavi API</a>.  </p>
+
+<h2>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+
+<p>You will need to have <code>numpy</code>, <code>scipy</code> and <code>mayavi</code> installed. Personally, I used <a href="https://code.google.com/p/pythonxy/wiki/Downloads">pythonxy</a> for the aforementioned dependencies on Windows. If you're on Linux, I'll assume that you know how to <code>apt-get</code> or <code>pip</code>.  </p>
+
+<p>Additionally, you must install <a href="https://github.com/eddotman/periodic_kdtree">PeriodicCKDTree</a>.  </p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Build the <code>local_atomic_motif.py</code> file, to ensure that nothing crazy is going on. Depending on the permissions with which you run the script, you may want to manually add a <code>build/</code> directory to the same location as the LAM Python files.  </p>
+
+<p>Next, run the <code>local_atomic_motif_isolator.py</code>, followed by the <code>local_atomic_motif_plotter.py</code>. Do not be surprised by long runtimes.  </p>
+
+<p>The <code>LAMisolator</code> and <code>LAMplotter</code> both include functions called <code>full_compute()</code>, which should work as-is.  </p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">atom-cluster-plot maintained by <a href="https://github.com/eddotman">eddotman</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>

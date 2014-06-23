@@ -18,8 +18,6 @@ Usage
 
 Build the `local_atomic_motif.py` file, to ensure that nothing crazy is going on. Depending on the permissions with which you run the script, you may want to manually add a `build/` directory to the same location as the LAM Python files.  
 
-Next, run the `local_atomic_motif_isolator.py`, followed by the `local_atomic_motif_plotter.py`. Do not be surprised by ridiculously long runtimes (which I'll hopefully work on later).  
+Next, run the `local_atomic_motif_isolator.py`, followed by the `local_atomic_motif_plotter.py`. Do not be surprised by long runtimes.  
 
 The `LAMisolator` and `LAMplotter` both include functions called `full_compute()`, which should work as-is.  
-
-Hopefully, further documentation will soon be added to explain how to modify this code.
